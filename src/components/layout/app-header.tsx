@@ -1,4 +1,6 @@
 
+'use client';
+
 import { Coins, User, Landmark, LayoutGrid, Wallet } from 'lucide-react';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
