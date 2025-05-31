@@ -63,18 +63,19 @@ export default function Deposit() {
 
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
-        NumTokenABI as any,
+        NumTokenABI,
         signer
       );
       console.log("Contract:", contract);
-      //const valueInEth = ethers.parseEther(amount);
+      const valueInEth = ethers.parseEther(amount);
 
       const symbol = await contract.symbol();
       console.log("Symbol:", symbol);
 
+      const balance = await contract.balanceOf(signer.address);
       // Asumiendo 18 decimales
-      //const readable = ethers.formatUnits(balance, 18);
-      //console.log(`Balance del usuario: ${readable} NUM`);
+      const readable = ethers.formatUnits(balance, 18);
+      console.log(`Balance del usuario: ${readable} NUM`);
       // ✅ Llamada al contrato con el ABI
       //const tx = await contract.deposit({ value: valueInEth });
 
