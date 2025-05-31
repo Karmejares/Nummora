@@ -1,73 +1,57 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import type { Loan, LoanFilterStatus } from "@/types";
-import { mockLoans as initialMockLoans } from "@/data/mock-loans";
-import { LoanCard } from "@/components/loans/loan-card";
-import { LoanFilters } from "@/components/loans/loan-filters";
-import { LoanSimulationModal } from "@/components/loans/loan-simulation-modal";
-import { Skeleton } from "@/components/ui/skeleton";
+import type { Loan } from "@/types";
+import { mockLoans } from "@/data/mock-loans";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
 import { LoadingDot } from "@/components/ui/loadingDot";
 
-export default function LoansPage() {
+// ⚠️ Simulamos un usuario logueado:
+const CURRENT_BORROWER_ID = "borrower-123";
+
+const STATUSES: Loan["status"][] = ["requested", "funded", "active", "repaid"];
+
+export default function BorrowersPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
-  const [currentFilter, setCurrentFilter] =
-    useState<LoanFilterStatus>("active");
-  const [isLoading, setIsLoading] = useState(true); // Simulate initial loading
+  const [currentStatus, setCurrentStatus] = useState<Loan["status"]>("active");
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Simulate fetching loans
+    // Simular carga inicial de préstamos del prestatario
     setTimeout(() => {
-      setLoans(initialMockLoans);
+      const borrowerLoans = mockLoans.filter(
+        (loan) => loan.beneficiaryId === CURRENT_BORROWER_ID
+      );
+      setLoans(borrowerLoans);
       setIsLoading(false);
-    }, 500); // Short delay to show skeleton loaders
+    }, 500);
   }, []);
 
-  const handleFilterChange = (filter: LoanFilterStatus) => {
-    setCurrentFilter(filter);
-  };
-
-  const handleLoanSimulated = (newLoanId: string) => {
-    // In a real app, you'd refetch loans or add the new loan to the list.
-    // For simulation, we'll add a dummy loan to the list.
-    const newSimulatedLoan: Loan = {
-      id: newLoanId,
-      borrowerName: "Nuevo Simulado",
-      borrowerAvatar: "https://placehold.co/40x40.png",
-      amount: Math.floor(Math.random() * 200000) + 50000, // Random amount
-      currency: "COP",
-      interestRate: 5,
-      status: "active", // Default to active for new simulated loans
-      isVerified: false,
-      termEndDate: new Date(
-        Date.now() + 30 * 24 * 60 * 60 * 1000
-      ).toISOString(),
-      contractAddress: `0xSimContract${newLoanId.slice(-4)}`,
-    };
-    setLoans((prevLoans) => [newSimulatedLoan, ...prevLoans]);
-    // Optionally switch filter to 'active' if not already
-    if (currentFilter !== "active") {
-      setCurrentFilter("active");
-    }
-  };
-
   const filteredLoans = useMemo(() => {
-    return loans.filter((loan) => loan.status === currentFilter);
-  }, [loans, currentFilter]);
+    return loans.filter((loan) => loan.status === currentStatus);
+  }, [loans, currentStatus]);
 
   const PageTitle = () => {
-    switch (currentFilter) {
+    switch (currentStatus) {
+      case "requested":
+        return "Solicitudes Pendientes";
+      case "funded":
+        return "Préstamos Aprobados";
       case "active":
-        return "Mis Préstamos Activos";
-      case "pending":
-        return "Préstamos Pendientes de Pago";
-      case "completed":
-        return "Historial de Préstamos Completados";
+        return "Préstamos Activos";
+      case "repaid":
+        return "Préstamos Finalizados";
       default:
         return "Mis Préstamos";
     }
+  };
+
+  const handleRequestLoan = () => {
+    // Aquí puedes abrir un modal o redirigir a un formulario
+    alert("Funcionalidad para solicitar préstamo pendiente.");
   };
 
   return (
@@ -77,11 +61,20 @@ export default function LoansPage() {
           <PageTitle />
         </h1>
         <div className="flex flex-col sm:flex-row gap-2 items-center">
-          <LoanFilters
-            currentFilter={currentFilter}
-            onFilterChange={handleFilterChange}
-          />
-          <LoanSimulationModal onLoanSimulated={handleLoanSimulated} />
+          <div className="flex gap-2">
+            {STATUSES.map((status) => (
+              <Button
+                key={status}
+                variant={status === currentStatus ? "default" : "outline"}
+                onClick={() => setCurrentStatus(status)}
+              >
+                {status.charAt(0).toUpperCase() + status.slice(1)}
+              </Button>
+            ))}
+          </div>
+          <Button onClick={handleRequestLoan} variant="secondary">
+            Solicitar préstamo
+          </Button>
         </div>
       </div>
 
@@ -127,7 +120,7 @@ export default function LoansPage() {
           <Info className="h-4 w-4" />
           <AlertTitle>No hay préstamos</AlertTitle>
           <AlertDescription>
-            Actualmente no tienes préstamos en la categoría '{currentFilter}'.
+            Actualmente no tienes préstamos en la categoría '{currentStatus}'.
           </AlertDescription>
         </Alert>
       )}
@@ -135,7 +128,7 @@ export default function LoansPage() {
   );
 }
 
-// Dummy Card components for Skeleton structure
+// 🔧 Reutilizamos estos componentes internos para estructura
 const Card = ({
   children,
   className,
@@ -149,15 +142,15 @@ const Card = ({
     {children}
   </div>
 );
+
 const CardHeader = ({
   children,
   className,
 }: {
   children: React.ReactNode;
   className?: string;
-}) => (
-  <div className={`flex flex-col space-y-1.5 p-6 ${className}`}>{children}</div>
-);
+}) => <div className={`flex items-center p-6 ${className}`}>{children}</div>;
+
 const CardContent = ({
   children,
   className,
@@ -165,6 +158,7 @@ const CardContent = ({
   children: React.ReactNode;
   className?: string;
 }) => <div className={`p-6 pt-0 ${className}`}>{children}</div>;
+
 const CardFooter = ({
   children,
   className,
@@ -174,3 +168,6 @@ const CardFooter = ({
 }) => (
   <div className={`flex items-center p-6 pt-0 ${className}`}>{children}</div>
 );
+
+// Puedes reutilizar LoanCard si ya soporta el campo "beneficiaryId" en el mock
+import { LoanCard } from "@/components/loans/loan-card";

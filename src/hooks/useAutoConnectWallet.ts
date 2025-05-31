@@ -7,6 +7,12 @@ import {
   setWalletError,
 } from "../store/walletSlice";
 
+// Extendemos Ethereum para permitir on/removeListener
+interface EthereumWithEvents extends ethers.Eip1193Provider {
+  on?: (event: string, listener: (...args: any[]) => void) => void;
+  removeListener?: (event: string, listener: (...args: any[]) => void) => void;
+}
+
 export const useAutoConnectWallet = () => {
   const dispatch = useDispatch();
 
@@ -45,18 +51,17 @@ export const useAutoConnectWallet = () => {
       window.location.reload();
     };
 
-    if (window.ethereum) {
-      window.ethereum.on("accountsChanged", handleAccountsChanged);
-      window.ethereum.on("chainChanged", handleChainChanged);
+    const eth = window.ethereum as EthereumWithEvents;
+
+    if (eth?.on) {
+      eth.on("accountsChanged", handleAccountsChanged);
+      eth.on("chainChanged", handleChainChanged);
     }
 
     return () => {
-      if (window.ethereum) {
-        window.ethereum.removeListener(
-          "accountsChanged",
-          handleAccountsChanged
-        );
-        window.ethereum.removeListener("chainChanged", handleChainChanged);
+      if (eth?.removeListener) {
+        eth.removeListener("accountsChanged", handleAccountsChanged);
+        eth.removeListener("chainChanged", handleChainChanged);
       }
     };
   }, [dispatch]);

@@ -1,8 +1,9 @@
+// app/borrower/layout.tsx
 import type { ReactNode } from "react";
 import { AppHeader } from "@/components/layout/app-header";
 import { Toaster } from "@/components/ui/toaster";
 
-export default function LoansLayout({ children }: { children: ReactNode }) {
+export default function BorrowerLayout({ children }: { children: ReactNode }) {
   return (
     <div className="relative flex min-h-screen flex-col bg-background text-foreground">
       <AppHeader />
