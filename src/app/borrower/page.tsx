@@ -8,6 +8,9 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { Info } from "lucide-react";
 import { LoadingDot } from "@/components/ui/loadingDot";
+import { LoanCard } from "@/components/loans/loan-card";
+import {LoanRequestBorrowerModal} from "@/components/borrower/loan-request-borrower";
+
 
 // ⚠️ Simulamos un usuario logueado:
 const CURRENT_BORROWER_ID = "borrower-123";
@@ -49,9 +52,9 @@ export default function BorrowersPage() {
     }
   };
 
-  const handleRequestLoan = () => {
-    // Aquí puedes abrir un modal o redirigir a un formulario
-    alert("Funcionalidad para solicitar préstamo pendiente.");
+  const handleRequestLoan = async (amount: string, installments: number) => {
+    console.log("Solicitar préstamo de:", amount, "cuotas:", installments);
+    // Aquí va la lógica para procesar la solicitud
   };
 
   return (
@@ -72,9 +75,7 @@ export default function BorrowersPage() {
               </Button>
             ))}
           </div>
-          <Button onClick={handleRequestLoan} variant="secondary">
-            Solicitar préstamo
-          </Button>
+          <LoanRequestBorrowerModal onConfirm={handleRequestLoan} />
         </div>
       </div>
 
@@ -168,6 +169,3 @@ const CardFooter = ({
 }) => (
   <div className={`flex items-center p-6 pt-0 ${className}`}>{children}</div>
 );
-
-// Puedes reutilizar LoanCard si ya soporta el campo "beneficiaryId" en el mock
-import { LoanCard } from "@/components/loans/loan-card";
