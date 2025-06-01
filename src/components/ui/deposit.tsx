@@ -26,7 +26,7 @@ import NummoraLoanABI from "@/lib/abi/NummoraLoan.json";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setLoading, setWalletError, setBalance } from "@/store/walletSlice";
 
-//TODO: Mover a un .env
+//TODO: Mover a un .env.local
 const CONTRACT_ADDRESS = "0x5266c971Eb509a4aA8d14c746ce4563e87aCD1cD";
 
 export default function Deposit() {
@@ -68,7 +68,7 @@ export default function Deposit() {
       //const valueInEth = ethers.parseEther(amount);
       const valueInEth = ethers.parseEther(amount);
       const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
+        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMMORALOAN!,
         NummoraLoanABI,
         signer
       );

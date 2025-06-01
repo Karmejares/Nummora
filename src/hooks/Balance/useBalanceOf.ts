@@ -6,7 +6,7 @@ import {setWalletError} from "@/store/walletSlice";
 import {useAppDispatch} from "@/store/hooks";
 import {useToast} from "@/hooks/use-toast";
 
-//TODO: Mover a un .env
+//TODO: Mover a un .env.local
 const CONTRACT_ADDRESS = "0x59876974fe17e715844E13cf6ddf602688d5F414";
 
 export const useBalanceOf = () => {
@@ -19,8 +19,8 @@ export const useBalanceOf = () => {
     useEffect(() => {
         const fetchBalance = async () => {
             try {
-                var NUMUSToken = await GetContract(
-                    CONTRACT_ADDRESS,
+                const NUMUSToken = await GetContract(
+                    process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMUSTOKEN!,
                     NumTokenABI
                 );
                 if (NUMUSToken == null) {
@@ -36,7 +36,6 @@ export const useBalanceOf = () => {
 
                 const balanceWei = await NUMUSToken.contract.balanceOf(NUMUSToken.signer.address)
                 const balanceFormatted = ethers.formatUnits(balanceWei, 18);
-                console.log(balanceFormatted);
                 setBalance(balanceFormatted);
             } catch (error) {
                 console.error("Error fetching balance:", error);
