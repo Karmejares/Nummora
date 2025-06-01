@@ -8,7 +8,7 @@ import {useToast} from "@/hooks/use-toast";
 
 export const useBalanceOf = () => {
     //TODO: agg balance
-    const [balance, setBalance] = useState<string>("");
+    const [balanceOf, setBalanceOf] = useState<string>("");
     const dispatch = useAppDispatch();
     const Toast = useToast();
 
@@ -27,21 +27,21 @@ export const useBalanceOf = () => {
                         status: "error",
                     });
                     dispatch(setWalletError("MetaMask no encontrado"));
-                    setBalance("0")
+                    setBalanceOf("0")
                     return;
                 }
 
                 const balanceWei = await NUMUSToken.contract.balanceOf(NUMUSToken.signer.address)
                 const balanceFormatted = ethers.formatUnits(balanceWei, 18);
-                setBalance(balanceFormatted);
+                setBalanceOf(balanceFormatted);
             } catch (error) {
                 console.error("Error fetching balance:", error);
-                setBalance("0");
+                setBalanceOf("0");
             }
         };
 
         fetchBalance();
     }, []);
 
-    return { balance };
+    return { balanceOf };
 };

@@ -2,7 +2,6 @@
 import {GetContract} from "@/utils/Contract";
 import NumTokenABI from "@/lib/abi/NumToken.json";
 import {setWalletError} from "@/store/walletSlice";
-import {ethers} from "ethers";
 import {useAppDispatch} from "@/store/hooks";
 import {useToast} from "@/hooks/use-toast";
 

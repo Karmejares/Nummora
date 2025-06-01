@@ -15,7 +15,7 @@ import {useBalanceOf} from "@/hooks/Balance/useBalanceOf";
 export default function LoansPage() {
 
   //Hoks
-  const { balance } = useBalanceOf();
+  const { balanceOf } = useBalanceOf();
 
   const [loans, setLoans] = useState<Loan[]>([]);
   const [currentFilter, setCurrentFilter] =
@@ -78,7 +78,7 @@ export default function LoansPage() {
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
       <div>
-        Mi balance: { balance }
+        Mi balance: { balanceOf }
       </div>
       <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <h1 className="text-3xl font-bold text-foreground">
