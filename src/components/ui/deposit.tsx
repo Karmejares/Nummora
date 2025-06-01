@@ -21,9 +21,9 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
-import NumTokenABI from "@/lib/abi/NumToken.json"; // Asegúrate de que la ruta sea correcta
+import NummoraLoanABI from "@/lib/abi/NummoraLoan.json"; // Asegúrate de que la ruta sea correcta
 
-const CONTRACT_ADDRESS = "0x8f1aba054a294FC6Faad328Fa290E4AF37F062Bc"; // Reemplaza con tu dirección de contrato
+const CONTRACT_ADDRESS = "0x10a678831b9A29282954530799dCcAB7710abd3F"; // Reemplaza con tu dirección de contrato
 
 export default function Deposit() {
   const [amount, setAmount] = useState("");
@@ -63,30 +63,19 @@ export default function Deposit() {
 
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
-        NumTokenABI,
+        NummoraLoanABI,
         signer
       );
       console.log("Contract:", contract);
       const valueInEth = ethers.parseEther(amount);
-
-      const symbol = await contract.symbol();
-      console.log("Symbol:", symbol);
-
-      const balance = await contract.balanceOf(signer.address);
-      // Asumiendo 18 decimales
-      const readable = ethers.formatUnits(balance, 18);
-      console.log(`Balance del usuario: ${readable} NUM`);
       // ✅ Llamada al contrato con el ABI
-      //const tx = await contract.deposit({ value: valueInEth });
-
-      Toast.toast({
-        title: "Depósito simulado",
-        description: `Se intentaría depositar NUM.`,
-        status: "info",
+      const tx = await contract.depositarPrestamista({
+        value: ethers.parseEther(amount),
       });
 
-      // await tx.wait();
-      // Toast.toast({ title: "¡Depósito confirmado!", status: "success" });
+      console.log("Transaction:", tx);
+
+      Toast.toast({ title: "¡Depósito confirmado!", status: "success" });
       setAmount("");
     } catch (error) {
       console.error(error);

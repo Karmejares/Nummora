@@ -3,7 +3,7 @@ import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface WalletState {
   address: string | null;
   simulatedBalance: number;
-  balance: string | null; // <-- Agregado
+  balance: string | null;
   connected: boolean;
   error: string | null;
 }
@@ -11,7 +11,7 @@ interface WalletState {
 const initialState: WalletState = {
   address: null,
   simulatedBalance: 0,
-  balance: null, // <-- Agregado
+  balance: null,
   connected: false,
   error: null,
 };
@@ -23,7 +23,6 @@ const walletSlice = createSlice({
     setBalance(state, action: PayloadAction<string | null>) {
       state.balance = action.payload;
     },
-
     connectWallet(state, action: PayloadAction<string>) {
       state.address = action.payload;
       state.connected = true;
@@ -41,6 +40,12 @@ const walletSlice = createSlice({
     setWalletError(state, action: PayloadAction<string | null>) {
       state.error = action.payload;
     },
+    simulateWithdraw(state, action: PayloadAction<number>) {
+      state.simulatedBalance = Math.max(
+        state.simulatedBalance - action.payload,
+        0
+      );
+    },
   },
 });
 
@@ -49,7 +54,8 @@ export const {
   disconnectWallet,
   setSimulatedBalance,
   setWalletError,
-  setBalance, // <-- Agregado
+  setBalance,
+  simulateWithdraw, // <-- Nuevo export
 } = walletSlice.actions;
 
 export default walletSlice.reducer;

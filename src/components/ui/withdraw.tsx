@@ -20,57 +20,55 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
+import NumTokenABI from "@/lib/abi/NumToken.json"; // Asegúrate de que la ruta sea correcta
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setSimulatedBalance } from "@/store/walletSlice";
 
 export default function Withdraw() {
   const [amount, setAmount] = useState("");
   const [loading, setLoading] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const Toast = useToast();
+  const dispatch = useAppDispatch();
+  const simulatedBalance = useAppSelector(
+    (state) => state.wallet.simulatedBalance
+  );
 
   async function handleWithdraw() {
-    if (!amount || isNaN(Number(amount)) || Number(amount) <= 0) {
-      Toast.toast({ title: "Invalid amount", status: "error" });
+    const numericAmount = Number(amount);
+
+    if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
+      Toast.toast({ title: "Monto inválido", status: "error" });
+      return;
+    }
+
+    if (numericAmount > simulatedBalance) {
+      Toast.toast({
+        title: "Fondos insuficientes",
+        description: `Tu saldo actual es ${simulatedBalance} NUM`,
+        status: "error",
+      });
       return;
     }
 
     setLoading(true);
 
     try {
-      const ethereum = getSafeEthereumProvider();
-      if (!ethereum) {
-        Toast.toast({
-          title: "MetaMask not found",
-          description: "Please install MetaMask to continue.",
-          status: "error",
-        });
-        return;
-      }
-
-      const provider = new ethers.BrowserProvider(ethereum);
-      const signer = await provider.getSigner();
-
-      const contractAddress = "YOUR_CONTRACT_ADDRESS"; // <-- Reemplaza
-      const abi = ["function withdraw(uint256 amount) public"];
-      const contract = new ethers.Contract(contractAddress, abi, signer);
-
-      const valueInEth = ethers.parseEther(amount);
-
-      const tx = await contract.withdraw(valueInEth);
+      // Simula el retiro sin llamar a MetaMask ni al contrato
+      dispatch(setSimulatedBalance(simulatedBalance - numericAmount));
 
       Toast.toast({
-        title: "Transaction sent!",
-        description: tx.hash,
-        status: "info",
+        title: "Retiro simulado exitoso",
+        description: `Se retiraron ${numericAmount} NUM`,
+        status: "success",
       });
 
-      await tx.wait();
-      Toast.toast({ title: "Withdrawal confirmed!", status: "success" });
       setAmount("");
     } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown error";
-
+      const message =
+        error instanceof Error ? error.message : "Error desconocido";
       Toast.toast({
-        title: "Transaction failed",
+        title: "Error al procesar el retiro",
         description: message,
         status: "error",
       });
@@ -79,7 +77,6 @@ export default function Withdraw() {
       setConfirmOpen(false);
     }
   }
-
   return (
     <Paper
       elevation={6}
@@ -100,6 +97,10 @@ export default function Withdraw() {
       </Typography>
 
       <Box mb={4}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Saldo disponible: <strong>{simulatedBalance} NUM</strong>
+        </Typography>
+
         <TextField
           label="Cantidad a retirar (NUM)"
           type="number"
