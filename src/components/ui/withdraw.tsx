@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   TextField,
@@ -8,6 +8,7 @@ import {
   Paper,
   Box,
   Divider,
+  CircularProgress,
 } from "@mui/material";
 import { useToast } from "@/hooks/use-toast";
 import { ethers } from "ethers";
@@ -20,67 +21,131 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
-import NumTokenABI from "@/lib/abi/NumToken.json"; // Asegúrate de que la ruta sea correcta
+import NumTokenABI from "@/lib/abi/NumToken.json"; // Ensure the correct ABI for withdrawal
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setSimulatedBalance } from "@/store/walletSlice";
+import { setLoading, setWalletError } from "@/store/walletSlice";
+
+const CONTRACT_ADDRESS = "0x10a678831b9A29282954530799dCcAB7710abd3F";
 
 export default function Withdraw() {
-  const [amount, setAmount] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const Toast = useToast();
+  const [amount, setAmount] = useState<string>("");
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
+  const [balance, setBalance] = useState<ethers.BigNumberish | null>(null); // To store the actual balance
   const dispatch = useAppDispatch();
-  const simulatedBalance = useAppSelector(
-    (state) => state.wallet.simulatedBalance
-  );
+  const loading = useAppSelector((state) => state.wallet.loading);
+  const { toast } = useToast();
+
+  const isAmountValid = amount && !isNaN(Number(amount)) && Number(amount) > 0;
+
+  useEffect(() => {
+    // Fetch MetaMask balance on component mount
+    const fetchBalance = async () => {
+      try {
+        const ethereum = getSafeEthereumProvider();
+        if (ethereum) {
+          const provider = new ethers.BrowserProvider(ethereum);
+          const signer = await provider.getSigner();
+          const walletBalance = await provider.getBalance(signer.getAddress());
+          setBalance(walletBalance);
+        }
+      } catch (error: unknown) {
+        if (error instanceof Error) {
+          toast({
+            title: "Error al obtener balance",
+            description: error.message || "Error desconocido",
+            status: "error",
+          });
+        } else {
+          // Handle the case where error is not an instance of Error
+          console.error("Unknown error:", error);
+        }
+      }
+    };
+
+    fetchBalance();
+  }, []);
 
   async function handleWithdraw() {
     const numericAmount = Number(amount);
 
-    if (!amount || isNaN(numericAmount) || numericAmount <= 0) {
-      Toast.toast({ title: "Monto inválido", status: "error" });
-      return;
-    }
-
-    if (numericAmount > simulatedBalance) {
-      Toast.toast({
-        title: "Fondos insuficientes",
-        description: `Tu saldo actual es ${simulatedBalance} NUM`,
+    if (!isAmountValid) {
+      toast({
+        title: "Monto inválido",
+        description: "El monto ingresado no es válido.",
         status: "error",
       });
       return;
     }
 
-    setLoading(true);
+    // Ensure the amount is not greater than the actual wallet balance
+    if (numericAmount > parseFloat(ethers.formatEther(balance || 0))) {
+      toast({
+        title: "Fondos insuficientes",
+        description: `Tu saldo actual es ${ethers.formatEther(
+          balance || 0
+        )} ETH`,
+        status: "error",
+      });
+      return;
+    }
+
+    dispatch(setLoading(true));
 
     try {
-      // Simula el retiro sin llamar a MetaMask ni al contrato
-      dispatch(setSimulatedBalance(simulatedBalance - numericAmount));
+      const ethereum = getSafeEthereumProvider();
 
-      Toast.toast({
-        title: "Retiro simulado exitoso",
-        description: `Se retiraron ${numericAmount} NUM`,
-        status: "success",
+      if (!ethereum) {
+        toast({
+          title: "MetaMask no encontrado",
+          description: "Instala MetaMask para continuar.",
+          status: "error",
+        });
+        dispatch(setWalletError("MetaMask no encontrado"));
+        return;
+      }
+
+      const provider = new ethers.BrowserProvider(ethereum);
+      const signer = await provider.getSigner();
+
+      // Convert the amount from NUM to its equivalent ETH value
+      const valueInEth = ethers.parseEther(amount); // Conversion to ETH
+
+      // Create contract instance
+      const contract = new ethers.Contract(
+        CONTRACT_ADDRESS,
+        NumTokenABI,
+        signer
+      );
+
+      // Interact with the contract's function
+      const tx = await contract.retirarNUMUSDeudor({
+        value: ethers.parseEther(amount),
       });
 
+      toast({
+        title: "¡Retiro confirmado!",
+        description: `${numericAmount} NUM han sido retirados.`,
+        status: "success",
+      });
       setAmount("");
     } catch (error) {
       const message =
         error instanceof Error ? error.message : "Error desconocido";
-      Toast.toast({
-        title: "Error al procesar el retiro",
+      toast({
+        title: "Error en el retiro",
         description: message,
         status: "error",
       });
     } finally {
-      setLoading(false);
-      setConfirmOpen(false);
+      dispatch(setLoading(false));
+      setOpenDialog(false);
     }
   }
+
   return (
     <Paper
       elevation={6}
-      className="max-w-md mx-auto p-8 rounded-2xl bg-white/80 backdrop-blur-md"
+      className="max-w-md mx-auto p-6 sm:p-8 bg-white/80 backdrop-blur-md"
       sx={{
         borderRadius: "24px",
         border: "1px solid rgba(0,0,0,0.1)",
@@ -90,15 +155,17 @@ export default function Withdraw() {
         variant="h4"
         component="h2"
         gutterBottom
-        className="font-semibold text-gray-900"
         sx={{ fontWeight: 700 }}
       >
-        Withdraw Funds
+        Retirar Fondos
       </Typography>
 
       <Box mb={4}>
         <Typography variant="body1" sx={{ mb: 2 }}>
-          Saldo disponible: <strong>{simulatedBalance} NUM</strong>
+          Saldo disponible:{" "}
+          <strong>
+            {balance ? ethers.formatEther(balance) : "Cargando..."} ETH
+          </strong>
         </Typography>
 
         <TextField
@@ -108,40 +175,50 @@ export default function Withdraw() {
           onChange={(e) => setAmount(e.target.value)}
           fullWidth
           disabled={loading}
+          error={amount !== "" && !isAmountValid}
+          helperText={
+            amount !== "" && !isAmountValid
+              ? "Ingresa un monto válido (> 0)"
+              : " "
+          }
           variant="outlined"
-          aria-label="Cantidad a retirar"
-          slotProps={{
-            input: {
-              inputProps: { step: "1000", className: "bg-white rounded-xl" },
-            },
+          inputProps={{
+            step: "1000",
+            className: "bg-white rounded-xl",
           }}
         />
       </Box>
 
-      <Divider sx={{ mt: 7, mb: 3 }} />
+      <Divider sx={{ my: 3 }} />
 
-      <Dialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogTrigger asChild>
           <Button
             variant="contained"
             fullWidth
             size="large"
-            disabled={loading || !amount}
-            className="rounded-xl shadow-md transition-all duration-300 font-semibold"
+            disabled={loading || !isAmountValid}
+            className="rounded-xl shadow-md font-semibold"
             sx={{
-              backgroundColor: "#1e293b", // azul oscuro tipo slate-800
+              backgroundColor: "#1e293b",
               color: "#fff",
               textTransform: "none",
               "&:hover": {
-                backgroundColor: "#0f172a", // slate-900
-                boxShadow: "0 4px 15px rgba(15, 23, 42, 0.4)", // sombra suave oscura
+                backgroundColor: "#0f172a",
+                boxShadow: "0 4px 15px rgba(15, 23, 42, 0.4)",
               },
               "&:active": {
                 transform: "scale(0.97)",
               },
             }}
           >
-            {loading ? "Procesando..." : "Retirar"}
+            {loading ? (
+              <>
+                <CircularProgress size={20} sx={{ mr: 1 }} /> Procesando...
+              </>
+            ) : (
+              "Retirar"
+            )}
           </Button>
         </DialogTrigger>
 
@@ -153,16 +230,17 @@ export default function Withdraw() {
             ¿Estás seguro de que deseas retirar <strong>{amount} NUM</strong>?
           </Typography>
           <DialogFooter className="flex justify-end gap-2 pt-4">
-            <Button
-              onClick={() => setConfirmOpen(false)}
-              variant="outlined"
-              color="secondary"
-              disabled={loading}
-            >
+            <Button variant="outlined" color="secondary" disabled={loading}>
               Cancelar
             </Button>
             <Button onClick={handleWithdraw} disabled={loading}>
-              Confirmar
+              {loading ? (
+                <>
+                  <CircularProgress size={16} sx={{ mr: 1 }} /> Confirmando...
+                </>
+              ) : (
+                "Confirmar"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

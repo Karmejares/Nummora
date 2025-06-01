@@ -85,7 +85,7 @@ export default function TransactionsDrawer({
         {/* Content */}
         <Box className="flex-grow overflow-y-auto p-4 bg-[hsl(var(--background))]">
           {tabIndex === 0 && <Deposit />}
-          {/* {tabIndex === 1 && <Withdraw />} */}
+          {tabIndex === 1 && <Withdraw />}
         </Box>
       </Box>
     </Drawer>
