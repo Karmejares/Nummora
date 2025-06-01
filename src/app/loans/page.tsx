@@ -10,8 +10,13 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import { LoadingDot } from "@/components/ui/loadingDot";
+import {useBalanceOf} from "@/hooks/Balance/useBalanceOf";
 
 export default function LoansPage() {
+
+  //Hoks
+  const { balance } = useBalanceOf();
+
   const [loans, setLoans] = useState<Loan[]>([]);
   const [currentFilter, setCurrentFilter] =
     useState<LoanFilterStatus>("active");
@@ -72,6 +77,9 @@ export default function LoansPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
+      <div>
+        Mi balance: { balance }
+      </div>
       <div className="mb-6 flex flex-col md:flex-row justify-between items-center gap-4">
         <h1 className="text-3xl font-bold text-foreground">
           <PageTitle />
