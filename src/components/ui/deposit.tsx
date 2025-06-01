@@ -30,16 +30,21 @@ import { setLoading, setWalletError, setBalance } from "@/store/walletSlice";
 const CONTRACT_ADDRESS = "0x5266c971Eb509a4aA8d14c746ce4563e87aCD1cD";
 
 export default function Deposit() {
-  const [amount, setAmount] = useState<string | undefined>();
+  const [amount, setAmount] = useState<string>("");
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.wallet.loading);
-  const Toast = useToast();
+  const { toast } = useToast();
 
   const isAmountValid = amount && !isNaN(Number(amount)) && Number(amount) > 0;
 
   async function handleDeposit() {
     if (!isAmountValid) {
-      Toast.toast({ title: "Monto inválido", status: "error" });
+      toast({
+        title: "Monto inválido",
+        description: "El monto ingresado no es válido.",
+        status: "error",
+      });
       return;
     }
 
@@ -49,7 +54,7 @@ export default function Deposit() {
       const ethereum = getSafeEthereumProvider();
 
       if (!ethereum) {
-        Toast.toast({
+        toast({
           title: "MetaMask no encontrado",
           description: "Instala MetaMask para continuar.",
           status: "error",
@@ -60,6 +65,8 @@ export default function Deposit() {
 
       const provider = new ethers.BrowserProvider(ethereum);
       const signer = await provider.getSigner();
+      //const valueInEth = ethers.parseEther(amount);
+      const valueInEth = ethers.parseEther(amount);
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
         NummoraLoanABI,
@@ -73,20 +80,34 @@ export default function Deposit() {
       // ✅ Actualizar el balance directamente
       dispatch(setBalance(Number(amount).toString()));
 
-      Toast.toast({ title: "¡Depósito confirmado!", status: "success" });
+      toast({
+        title: "¡Depósito confirmado!",
+        description: tx.hash,
+        status: "info",
+      });
       setAmount("");
     } catch (error) {
-      const msg = error instanceof Error ? error.message : "Error desconocido";
-
-      Toast.toast({
-        title: "Fallo en la transacción",
-        description: msg,
-        status: "error",
-      });
-
-      dispatch(setWalletError(msg));
+      if (error instanceof Error) {
+        toast({
+          title: "Fallo en la transacción",
+          description: error.message || "",
+          status: "error",
+        });
+      } else {
+        toast({
+          title: "Fallo en la transacción",
+          description: "Un error desconocido ocurrió.",
+          status: "error",
+        });
+      }
+      dispatch(
+        setWalletError(
+          error instanceof Error ? error.message : "Error desconocido"
+        )
+      );
     } finally {
       dispatch(setLoading(false));
+      setOpenDialog(false);
     }
   }
 
@@ -132,7 +153,7 @@ export default function Deposit() {
 
       <Divider sx={{ my: 3 }} />
 
-      <Dialog>
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogTrigger asChild>
           <Button
             variant="contained"
@@ -175,7 +196,13 @@ export default function Deposit() {
               Cancelar
             </Button>
             <Button onClick={handleDeposit} disabled={loading}>
-              Confirmar
+              {loading ? (
+                <>
+                  <CircularProgress size={16} sx={{ mr: 1 }} /> Confirmando...
+                </>
+              ) : (
+                "Confirmar"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
