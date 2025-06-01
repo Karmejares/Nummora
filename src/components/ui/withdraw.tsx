@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   Button,
   TextField,
@@ -12,7 +10,6 @@ import {
 } from "@mui/material";
 import { useToast } from "@/hooks/use-toast";
 import { ethers } from "ethers";
-import { getSafeEthereumProvider } from "@/utils/ethereum";
 import {
   Dialog,
   DialogTrigger,
@@ -21,64 +18,38 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
-import NumTokenABI from "@/lib/abi/NumToken.json"; // Ensure the correct ABI for withdrawal
+import NummoraLoanABI from "@/lib/abi/NummoraLoan.json";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setLoading, setWalletError } from "@/store/walletSlice";
 import { useBalanceOf } from "@/hooks/Balance/useBalanceOf";
-
-const CONTRACT_ADDRESS = "0x10a678831b9A29282954530799dCcAB7710abd3F"; // Replace with the actual contract address
+import {GetContract} from "@/utils/Contract";
 
 export default function Withdraw() {
   const [amount, setAmount] = useState<string>("");
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [balance, setBalance] = useState<string>(""); // To store the actual NUM balance
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.wallet.loading);
   const { toast } = useToast();
-  const { balanceOf } = useBalanceOf();
-
-  const isAmountValid = amount && !isNaN(Number(amount)) && Number(amount) > 0;
-
-  useEffect(() => {
-    // Fetch MetaMask balance on component mount
-    const fetchBalance = async () => {
-      try {
-        setBalance(balanceOf);
-      } catch (error: unknown) {
-        if (error instanceof Error) {
-          toast({
-            title: "Error al obtener balance",
-            description: error.message || "Error desconocido",
-            status: "error",
-          });
-        } else {
-          // Handle the case where error is not an instance of Error
-          console.error("Unknown error:", error);
-        }
-      }
-    };
-
-    fetchBalance();
-  }, []);
+  const { balanceOf, balanceFormatted } = useBalanceOf();
 
   async function handleWithdraw() {
     const numericAmount = Number(amount);
 
-    if (!isAmountValid) {
+    if (numericAmount > parseFloat(balanceFormatted)) {
       toast({
-        title: "Monto inválido",
-        description: "El monto ingresado no es válido.",
+        title: "Fondos insuficientes",
+        description: `Tu saldo actual es ${balanceFormatted} NUM`,
         status: "error",
       });
       return;
     }
 
     // Ensure the amount is not greater than the actual wallet balance (NUM)
-    if (numericAmount > parseFloat(ethers.formatUnits(balance || 0, 18))) {
+    if (numericAmount > parseFloat(ethers.formatUnits(balanceOf || 0, 18))) {
       toast({
         title: "Fondos insuficientes",
         description: `Tu saldo actual es ${ethers.formatUnits(
-          balance || 0,
+            balanceOf || 0,
           18
         )} NUM`,
         status: "error",
@@ -89,9 +60,13 @@ export default function Withdraw() {
     dispatch(setLoading(true));
 
     try {
-      const ethereum = getSafeEthereumProvider();
 
-      if (!ethereum) {
+      // Create contract instance
+      const contractCore = await GetContract(
+          process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMMORALOAN!,
+          NummoraLoanABI
+      );
+      if (contractCore == null) {
         toast({
           title: "MetaMask no encontrado",
           description: "Instala MetaMask para continuar.",
@@ -101,20 +76,8 @@ export default function Withdraw() {
         return;
       }
 
-      const provider = new ethers.BrowserProvider(ethereum);
-      const signer = await provider.getSigner();
-
-      // Create contract instance
-      const contract = new ethers.Contract(
-        CONTRACT_ADDRESS,
-        NumTokenABI,
-        signer
-      );
-
-      // Interact with the contract's withdrawal function (assuming it takes NUM as a parameter)
-      const valueInNum = ethers.parseUnits(amount, 18); // Convert NUM amount to the correct units
-
-      const tx = await contract.retirarPrestamista(valueInNum);
+      const parsedAmount = ethers.parseUnits(amount.trim(), 18);
+      await contractCore.contract.retirarPrestamista(parsedAmount);
 
       toast({
         title: "¡Retiro confirmado!",
@@ -158,7 +121,7 @@ export default function Withdraw() {
         <Typography variant="body1" sx={{ mb: 2 }}>
           Saldo disponible:{" "}
           <strong>
-            {balance ? ethers.formatUnits(balance, 18) : "Cargando..."} NUM
+            {balanceFormatted ? balanceFormatted : "Cargando..."} NUM
           </strong>
         </Typography>
 
@@ -169,12 +132,6 @@ export default function Withdraw() {
           onChange={(e) => setAmount(e.target.value)}
           fullWidth
           disabled={loading}
-          error={amount !== "" && !isAmountValid}
-          helperText={
-            amount !== "" && !isAmountValid
-              ? "Ingresa un monto válido (> 0)"
-              : " "
-          }
           variant="outlined"
           inputProps={{
             step: "1000",
@@ -191,7 +148,6 @@ export default function Withdraw() {
             variant="contained"
             fullWidth
             size="large"
-            disabled={loading || !isAmountValid}
             className="rounded-xl shadow-md font-semibold"
             sx={{
               backgroundColor: "#1e293b",
