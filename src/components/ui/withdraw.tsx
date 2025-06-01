@@ -24,16 +24,18 @@ import {
 import NumTokenABI from "@/lib/abi/NumToken.json"; // Ensure the correct ABI for withdrawal
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setLoading, setWalletError } from "@/store/walletSlice";
+import { useBalanceOf } from "@/hooks/Balance/useBalanceOf";
 
 const CONTRACT_ADDRESS = "0x10a678831b9A29282954530799dCcAB7710abd3F"; // Replace with the actual contract address
 
 export default function Withdraw() {
   const [amount, setAmount] = useState<string>("");
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [balance, setBalance] = useState<ethers.BigNumber | null>(null); // To store the actual NUM balance
+  const [balance, setBalance] = useState<string>(""); // To store the actual NUM balance
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.wallet.loading);
   const { toast } = useToast();
+  const { balanceOf } = useBalanceOf();
 
   const isAmountValid = amount && !isNaN(Number(amount)) && Number(amount) > 0;
 
@@ -41,13 +43,7 @@ export default function Withdraw() {
     // Fetch MetaMask balance on component mount
     const fetchBalance = async () => {
       try {
-        const ethereum = getSafeEthereumProvider();
-        if (ethereum) {
-          const provider = new ethers.BrowserProvider(ethereum);
-          const signer = await provider.getSigner();
-          const walletBalance = await provider.getBalance(signer.getAddress());
-          setBalance(walletBalance);
-        }
+        setBalance(balanceOf);
       } catch (error: unknown) {
         if (error instanceof Error) {
           toast({

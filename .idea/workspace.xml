@@ -5,10 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="c2282e05-89fc-472e-95a0-a78d94eea6f7" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/ui/deposit.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/deposit.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/loans/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/loans/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/ui/withdraw.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/ui/withdraw.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/contracts/numusToken/approveNumusToken.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/contracts/numusToken/approveNumusToken.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/hooks/Balance/useBalanceOf.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/Balance/useBalanceOf.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -42,7 +42,7 @@
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "git-widget-placeholder": "lender-balance",
+    "git-widget-placeholder": "creation-methods-contracts",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -78,7 +78,7 @@
       <option name="presentableId" value="Default" />
       <updated>1730080790706</updated>
       <workItem from="1730080791798" duration="710000" />
-      <workItem from="1748748137568" duration="7356000" />
+      <workItem from="1748748137568" duration="10748000" />
     </task>
     <servers />
   </component>

@@ -1,20 +1,20 @@
-﻿import { useEffect, useState } from "react";
-import { ethers } from "ethers";
+﻿import {useEffect, useState} from "react";
 import {GetContract} from "@/utils/Contract";
 import NumTokenABI from "@/lib/abi/NumToken.json";
 import {setWalletError} from "@/store/walletSlice";
 import {useAppDispatch} from "@/store/hooks";
 import {useToast} from "@/hooks/use-toast";
 
-export const useBalanceOf = () => {
-    //TODO: agg balance
-    const [balanceOf, setBalanceOf] = useState<string>("");
+export const approveNumusToken = (
+    spender:string,
+    amount:string
+) => {
+    const [isSusscess, setIsSusscess] = useState<boolean>(false);
     const dispatch = useAppDispatch();
     const Toast = useToast();
 
-
     useEffect(() => {
-        const fetchBalance = async () => {
+        const sendApprove = async () => {
             try {
                 const NUMUSToken = await GetContract(
                     process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMUSTOKEN!,
@@ -27,21 +27,17 @@ export const useBalanceOf = () => {
                         status: "error",
                     });
                     dispatch(setWalletError("MetaMask no encontrado"));
-                    setBalanceOf("0")
                     return;
                 }
-
-                const balanceWei = await NUMUSToken.contract.balanceOf(NUMUSToken.signer.address)
-                const balanceFormatted = ethers.formatUnits(balanceWei, 18);
-                setBalanceOf(balanceFormatted);
+                    await NUMUSToken.contract.approve(spender, amount);
+                setIsSusscess(true)
             } catch (error) {
                 console.error("Error fetching balance:", error);
-                setBalanceOf("0");
             }
         };
 
-        fetchBalance();
+        sendApprove();
     }, []);
 
-    return { balanceOf };
-};
+    return isSusscess;
+}
