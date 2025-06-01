@@ -3,6 +3,7 @@ import NummoraLoan from "@/lib/abi/NummoraLoan.json";
 import { setWalletError } from "@/store/walletSlice";
 import { toast } from "@/hooks/use-toast";
 import {Dispatch} from "redux";
+import {LogDescription} from "ethers";
 
 export const loanRequestNummoraCore = async (
   amountNumus: string,
@@ -23,7 +24,22 @@ export const loanRequestNummoraCore = async (
       return false;
     }
 
-    await nummoraCore.contract.solicitarPrestamo(amountNumus);
+    var tx = await nummoraCore.contract.solicitarPrestamo(amountNumus);
+    const receipt = await tx.wait();
+
+    const event: LogDescription | null = receipt.logs
+        .map((log: { topics: ReadonlyArray<string>; data: string; }) => {
+          try {
+            return nummoraCore.contract.interface.parseLog(log);
+          } catch {
+            return null;
+          }
+        }).find((log: { name: string; }) => log?.name === "LoanRequested");
+
+    if (event) {
+      const { loanId, deudor, prestamista, amount, amountToPay } = event.args;
+    } else {
+    }
     toast({
       title: "prestamo exitosa",
       description: "El prestamo ha sido aprobado correctamente.",

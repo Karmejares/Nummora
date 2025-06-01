@@ -14,7 +14,7 @@ import {balanceOfNumusToken} from "@/contracts/numusToken/balanceOfNumusToken";
 
 export default function LoansPage() {
 
-  //Hoks
+
   const { balanceFormatted } = balanceOfNumusToken();
 
   const [loans, setLoans] = useState<Loan[]>([]);
