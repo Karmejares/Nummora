@@ -3,7 +3,7 @@ import NummoraLoan from "@/lib/abi/NummoraLoan.json";
 import { setWalletError } from "@/store/walletSlice";
 import { toast } from "@/hooks/use-toast";
 import {Dispatch} from "redux";
-import {LogDescription} from "ethers";
+import {ethers, LogDescription} from "ethers";
 
 export const loanRequestNummoraCore = async (
   amountNumus: string,
@@ -37,19 +37,20 @@ export const loanRequestNummoraCore = async (
         }).find((log: { name: string; }) => log?.name === "LoanRequested");
 
     if (event) {
-      const { loanId } = event.args;
+      const { loanId, deudor, amountToPayCCOP, amountNUMUS } = event.args;
 
-      const key = "nummora_loan_ids";
+      const key = "nummora_loans";
+      const existing = sessionStorage.getItem(key);
+      const currentLoans = existing ? JSON.parse(existing) : [];
 
-      // Obtener lista anterior (si hay)
-      const existing = localStorage.getItem(key);
-      const loanIds: string[] = existing ? JSON.parse(existing) : [];
+      const newLoan = {
+        loanId: loanId.toString(),
+        monto: ethers.formatUnits(amountNUMUS, 18),
+        toPay: ethers.formatUnits(amountToPayCCOP, 18),
+        lender: deudor,
+      };
 
-      // Agregar el nuevo ID (convertido a string)
-      loanIds.push(loanId.toString());
-
-      // Guardar de nuevo
-      localStorage.setItem(key, JSON.stringify(loanIds));
+      sessionStorage.setItem(key, JSON.stringify([...currentLoans, newLoan]));
     }
     toast({
       title: "prestamo exitosa",

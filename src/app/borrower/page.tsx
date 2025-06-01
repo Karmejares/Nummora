@@ -10,6 +10,9 @@ import { Info } from "lucide-react";
 import { LoadingDot } from "@/components/ui/loadingDot";
 import { LoanCard } from "@/components/loans/loan-card";
 import {LoanRequestBorrowerModal} from "@/components/borrower/loan-request-borrower";
+import {Grid} from "@mui/system";
+import {PayLoanNummoraCore} from "@/contracts/NummoraCore/PayLoanNummoraCore";
+import {useAppDispatch} from "@/store/hooks";
 
 
 // ⚠️ Simulamos un usuario logueado:
@@ -21,16 +24,19 @@ export default function BorrowersPage() {
   const [loans, setLoans] = useState<Loan[]>([]);
   const [currentStatus, setCurrentStatus] = useState<Loan["status"]>("active");
   const [isLoading, setIsLoading] = useState(true);
+  const [sessionLoans, setSessionLoans] = useState<any[]>([]);
+  const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // Simular carga inicial de préstamos del prestatario
-    setTimeout(() => {
-      const borrowerLoans = mockLoans.filter(
-        (loan) => loan.beneficiaryId === CURRENT_BORROWER_ID
-      );
-      setLoans(borrowerLoans);
+    const raw = sessionStorage.getItem("nummora_loans");
+    if (!raw) {
       setIsLoading(false);
-    }, 500);
+      return;
+    }
+
+    const parsed = JSON.parse(raw);
+    setSessionLoans(parsed);
+    setIsLoading(false);
   }, []);
 
   const filteredLoans = useMemo(() => {
@@ -110,12 +116,40 @@ export default function BorrowersPage() {
             </div>
           ))}
         </div>
-      ) : filteredLoans.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredLoans.map((loan) => (
-            <LoanCard key={loan.id} loan={loan} />
-          ))}
-        </div>
+      ) : sessionLoans.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {sessionLoans.map((loan) => (
+                <Card
+                    key={loan.loanId}
+                    className="w-full max-w-sm rounded-2xl shadow-md border border-muted bg-background p-6"
+                >
+                  <CardContent className="space-y-4">
+                    <div className="text-xl font-semibold text-primary">Detalle del Préstamo</div>
+
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground text-sm">Total Prestado</p>
+                      <p className="text-lg font-medium">{loan.monto}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground text-sm">Monto a pagar</p>
+                      <p className="text-lg font-medium text-destructive">{loan.toPay}</p>
+                    </div>
+
+                    <div className="space-y-1">
+                      <p className="text-muted-foreground text-sm">Prestamista</p>
+                      <p className="text-base font-medium">{loan.lender}</p>
+                    </div>
+
+                    <Button onClick={ async () => await PayLoanNummoraCore(
+                        loan.loanId,
+                        loan.toPay,
+                        dispatch
+                    )} className="w-full mt-4">Pagar</Button>
+                  </CardContent>
+                </Card>
+            ))}
+          </div>
       ) : (
           <div>
             <Alert className="mt-8 max-w-md mx-auto">
