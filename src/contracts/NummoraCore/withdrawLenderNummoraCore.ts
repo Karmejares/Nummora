@@ -1,20 +1,20 @@
 ﻿import { GetContract } from "@/utils/Contract";
-import NumTokenABI from "@/lib/abi/NumToken.json";
+import NummoraLoan from "@/lib/abi/NummoraLoan.json";
 import { setWalletError } from "@/store/walletSlice";
 import { toast } from "@/hooks/use-toast";
+import {ethers} from "ethers";
 import {useAppDispatch} from "@/store/hooks";
 
-export const approveNumusToken = async (
-  spender: string,
-  amount: string
+export const withdrawLenderNummoraCore = async (
+  amountNumus: string
 ): Promise<boolean> => {
   const dispatch = useAppDispatch();
   try {
-    const NUMUSToken = await GetContract(
-      process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMUSTOKEN!,
-      NumTokenABI
+    const NummoraCore = await GetContract(
+      process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMMORALOAN!,
+      NummoraLoan
     );
-    if (!NUMUSToken) {
+    if (!NummoraCore) {
       toast({
         title: "MetaMask no encontrado",
         description: "Instala MetaMask para continuar.",
@@ -24,18 +24,19 @@ export const approveNumusToken = async (
       return false;
     }
 
-    await NUMUSToken.contract.approve(spender, amount);
+    const parsedAmount = ethers.parseUnits(amountNumus.trim(), 18);
+    await NummoraCore.contract.retirarPrestamista(parsedAmount);
     toast({
-      title: "Aprobación exitosa",
-      description: "El uso de saldo ha sido aprobado.",
+      title: "Retiro exitoso",
+      description: "En breves veras reflejado su dinero en tu wallet",
       status: "success",
     });
     return true;
   } catch (error) {
     console.error("Error al aprobar:", error);
     toast({
-      title: "Error en la aprobación",
-      description: "Hubo un problema al intentar aprobar el saldo.",
+      title: "Error al retirar",
+      description: "Hubo un problema al intentar retirar el saldo.",
       status: "error",
     });
     return false;

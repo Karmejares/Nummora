@@ -10,12 +10,12 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Info } from "lucide-react";
 import { LoadingDot } from "@/components/ui/loadingDot";
-import {useBalanceOf} from "@/hooks/Balance/useBalanceOf";
+import {balanceOfNumusToken} from "@/contracts/numusToken/balanceOfNumusToken";
 
 export default function LoansPage() {
 
   //Hoks
-  const { balanceFormatted } = useBalanceOf();
+  const { balanceFormatted } = balanceOfNumusToken();
 
   const [loans, setLoans] = useState<Loan[]>([]);
   const [currentFilter, setCurrentFilter] =

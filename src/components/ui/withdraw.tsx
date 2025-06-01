@@ -21,7 +21,7 @@ import {
 import NummoraLoanABI from "@/lib/abi/NummoraLoan.json";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setLoading, setWalletError } from "@/store/walletSlice";
-import { useBalanceOf } from "@/hooks/Balance/useBalanceOf";
+import { balanceOfNumusToken } from "@/contracts/numusToken/balanceOfNumusToken";
 import {GetContract} from "@/utils/Contract";
 
 export default function Withdraw() {
@@ -30,7 +30,7 @@ export default function Withdraw() {
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.wallet.loading);
   const { toast } = useToast();
-  const { balanceOf, balanceFormatted } = useBalanceOf();
+  const { balanceOf, balanceFormatted } = balanceOfNumusToken();
 
   async function handleWithdraw() {
     const numericAmount = Number(amount);

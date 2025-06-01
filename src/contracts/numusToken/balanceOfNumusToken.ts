@@ -6,7 +6,7 @@ import { setWalletError } from "@/store/walletSlice";
 import { useAppDispatch } from "@/store/hooks";
 import { useToast } from "@/hooks/use-toast";
 
-export const useBalanceOf = () => {
+export const balanceOfNumusToken = () => {
     const [balanceOf, setBalanceRaw] = useState<bigint>(BigInt(0));
     const [balanceFormatted, setBalanceFormatted] = useState<string>("0");
     const dispatch = useAppDispatch();
