@@ -25,12 +25,12 @@ import NumTokenABI from "@/lib/abi/NumToken.json"; // Ensure the correct ABI for
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setLoading, setWalletError } from "@/store/walletSlice";
 
-const CONTRACT_ADDRESS = "0x10a678831b9A29282954530799dCcAB7710abd3F";
+const CONTRACT_ADDRESS = "0x10a678831b9A29282954530799dCcAB7710abd3F"; // Replace with the actual contract address
 
 export default function Withdraw() {
   const [amount, setAmount] = useState<string>("");
   const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const [balance, setBalance] = useState<ethers.BigNumberish | null>(null); // To store the actual balance
+  const [balance, setBalance] = useState<ethers.BigNumber | null>(null); // To store the actual NUM balance
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.wallet.loading);
   const { toast } = useToast();
@@ -77,13 +77,14 @@ export default function Withdraw() {
       return;
     }
 
-    // Ensure the amount is not greater than the actual wallet balance
-    if (numericAmount > parseFloat(ethers.formatEther(balance || 0))) {
+    // Ensure the amount is not greater than the actual wallet balance (NUM)
+    if (numericAmount > parseFloat(ethers.formatUnits(balance || 0, 18))) {
       toast({
         title: "Fondos insuficientes",
-        description: `Tu saldo actual es ${ethers.formatEther(
-          balance || 0
-        )} ETH`,
+        description: `Tu saldo actual es ${ethers.formatUnits(
+          balance || 0,
+          18
+        )} NUM`,
         status: "error",
       });
       return;
@@ -107,9 +108,6 @@ export default function Withdraw() {
       const provider = new ethers.BrowserProvider(ethereum);
       const signer = await provider.getSigner();
 
-      // Convert the amount from NUM to its equivalent ETH value
-      const valueInEth = ethers.parseEther(amount); // Conversion to ETH
-
       // Create contract instance
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
@@ -117,10 +115,10 @@ export default function Withdraw() {
         signer
       );
 
-      // Interact with the contract's function
-      const tx = await contract.retirarNUMUSDeudor({
-        value: ethers.parseEther(amount),
-      });
+      // Interact with the contract's withdrawal function (assuming it takes NUM as a parameter)
+      const valueInNum = ethers.parseUnits(amount, 18); // Convert NUM amount to the correct units
+
+      const tx = await contract.retirarNUMUSDeudor(valueInNum);
 
       toast({
         title: "¡Retiro confirmado!",
@@ -164,7 +162,7 @@ export default function Withdraw() {
         <Typography variant="body1" sx={{ mb: 2 }}>
           Saldo disponible:{" "}
           <strong>
-            {balance ? ethers.formatEther(balance) : "Cargando..."} ETH
+            {balance ? ethers.formatUnits(balance, 18) : "Cargando..."} NUM
           </strong>
         </Typography>
 
