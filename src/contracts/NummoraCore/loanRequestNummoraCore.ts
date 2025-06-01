@@ -37,8 +37,19 @@ export const loanRequestNummoraCore = async (
         }).find((log: { name: string; }) => log?.name === "LoanRequested");
 
     if (event) {
-      const { loanId, deudor, prestamista, amount, amountToPay } = event.args;
-    } else {
+      const { loanId } = event.args;
+
+      const key = "nummora_loan_ids";
+
+      // Obtener lista anterior (si hay)
+      const existing = localStorage.getItem(key);
+      const loanIds: string[] = existing ? JSON.parse(existing) : [];
+
+      // Agregar el nuevo ID (convertido a string)
+      loanIds.push(loanId.toString());
+
+      // Guardar de nuevo
+      localStorage.setItem(key, JSON.stringify(loanIds));
     }
     toast({
       title: "prestamo exitosa",

@@ -117,13 +117,15 @@ export default function BorrowersPage() {
           ))}
         </div>
       ) : (
-        <Alert className="mt-8 max-w-md mx-auto">
-          <Info className="h-4 w-4" />
-          <AlertTitle>No hay préstamos</AlertTitle>
-          <AlertDescription>
-            Actualmente no tienes préstamos en la categoría '{currentStatus}'.
-          </AlertDescription>
-        </Alert>
+          <div>
+            <Alert className="mt-8 max-w-md mx-auto">
+              <Info className="h-4 w-4" />
+              <AlertTitle>No hay préstamos</AlertTitle>
+              <AlertDescription>
+                Actualmente no tienes préstamos en la categoría '{currentStatus}'.
+              </AlertDescription>
+            </Alert>
+          </div>
       )}
     </div>
   );
