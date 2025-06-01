@@ -8,24 +8,24 @@ import {
   FormControlLabel,
   CircularProgress,
 } from "@mui/material";
-import { approveNumusToken } from "@/hooks/contracts/numusToken/approveNumusToken";
+import { approveNumusToken } from "@/contracts/numusToken/approveNumusToken";
 import { useBalanceOf } from "@/hooks/Balance/useBalanceOf";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 
 export const ApproveBalanceCard: React.FC = () => {
-  const { balanceOf } = useBalanceOf();
   const dispatch = useAppDispatch();
-  const spender = useAppSelector((state) => state.wallet.address); // lo tomas del store
-
+  const { balanceOf } = useBalanceOf();
   const [checked, setChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
 
   const handleApprove = async () => {
     setIsLoading(true);
+    console.log(balanceOf);
+
     const success = await approveNumusToken(
       process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMMORALOAN!,
-      balanceOf,
+      balanceOf.toString(),
       dispatch
     );
     setIsSuccess(success);
