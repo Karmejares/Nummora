@@ -30,6 +30,7 @@ const CONTRACT_ADDRESS = "0x10a678831b9A29282954530799dCcAB7710abd3F";
 
 export default function Deposit() {
   const [amount, setAmount] = useState<string>("");
+  const [openDialog, setOpenDialog] = useState<boolean>(false);
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.wallet.loading);
   const { toast } = useToast();
@@ -105,6 +106,7 @@ export default function Deposit() {
       );
     } finally {
       dispatch(setLoading(false));
+      setOpenDialog(false);
     }
   }
 
@@ -150,7 +152,7 @@ export default function Deposit() {
 
       <Divider sx={{ my: 3 }} />
 
-      <Dialog>
+      <Dialog open={openDialog} onOpenChange={setOpenDialog}>
         <DialogTrigger asChild>
           <Button
             variant="contained"
