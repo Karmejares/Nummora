@@ -1,17 +1,16 @@
 ﻿import { useEffect, useState } from "react";
 import { ethers } from "ethers";
-import {GetContract} from "@/utils/Contract";
+import { GetContract } from "@/utils/Contract";
 import NumTokenABI from "@/lib/abi/NumToken.json";
-import {setWalletError} from "@/store/walletSlice";
-import {useAppDispatch} from "@/store/hooks";
-import {useToast} from "@/hooks/use-toast";
+import { setWalletError } from "@/store/walletSlice";
+import { useAppDispatch } from "@/store/hooks";
+import { useToast } from "@/hooks/use-toast";
 
 export const useBalanceOf = () => {
-    //TODO: agg balance
-    const [balanceOf, setBalanceOf] = useState<string>("");
+    const [balanceOf, setBalanceRaw] = useState<bigint>(BigInt(0));
+    const [balanceFormatted, setBalanceFormatted] = useState<string>("0");
     const dispatch = useAppDispatch();
     const Toast = useToast();
-
 
     useEffect(() => {
         const fetchBalance = async () => {
@@ -20,28 +19,28 @@ export const useBalanceOf = () => {
                     process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMUSTOKEN!,
                     NumTokenABI
                 );
-                if (NUMUSToken == null) {
+                if (!NUMUSToken) {
                     Toast.toast({
                         title: "MetaMask no encontrado",
                         description: "Instala MetaMask para continuar.",
                         status: "error",
                     });
                     dispatch(setWalletError("MetaMask no encontrado"));
-                    setBalanceOf("0")
                     return;
                 }
 
-                const balanceWei = await NUMUSToken.contract.balanceOf(NUMUSToken.signer.address)
-                const balanceFormatted = ethers.formatUnits(balanceWei, 18);
-                setBalanceOf(balanceFormatted);
+                const balanceWei = await NUMUSToken.contract.balanceOf(NUMUSToken.signer.address);
+                setBalanceRaw(balanceWei);
+                setBalanceFormatted(ethers.formatUnits(balanceWei, 18));
             } catch (error) {
                 console.error("Error fetching balance:", error);
-                setBalanceOf("0");
+                setBalanceRaw(BigInt(0));
+                setBalanceFormatted("0");
             }
         };
 
         fetchBalance();
     }, []);
 
-    return { balanceOf };
+    return { balanceOf, balanceFormatted };
 };

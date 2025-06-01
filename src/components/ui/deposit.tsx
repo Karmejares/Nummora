@@ -26,8 +26,6 @@ import NummoraLoanABI from "@/lib/abi/NummoraLoan.json";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setLoading, setWalletError, setBalance } from "@/store/walletSlice";
 
-//TODO: Mover a un .env.local
-const CONTRACT_ADDRESS = "0x5266c971Eb509a4aA8d14c746ce4563e87aCD1cD";
 
 export default function Deposit() {
   const [amount, setAmount] = useState<string>("");
