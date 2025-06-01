@@ -3,12 +3,12 @@ import NummoraLoan from "@/lib/abi/NummoraLoan.json";
 import { setWalletError } from "@/store/walletSlice";
 import { toast } from "@/hooks/use-toast";
 import {ethers} from "ethers";
-import {useAppDispatch} from "@/store/hooks";
+import {Dispatch} from "redux";
 
 export const withdrawLenderNummoraCore = async (
-  amountNumus: string
+  amountNumus: string,
+  dispatch: Dispatch
 ): Promise<boolean> => {
-  const dispatch = useAppDispatch();
   try {
     const NummoraCore = await GetContract(
       process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMMORALOAN!,

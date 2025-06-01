@@ -3,12 +3,13 @@ import NumTokenABI from "@/lib/abi/NumToken.json";
 import { setWalletError } from "@/store/walletSlice";
 import { toast } from "@/hooks/use-toast";
 import {useAppDispatch} from "@/store/hooks";
+import {Dispatch} from "redux";
 
 export const approveNumusToken = async (
   spender: string,
-  amount: string
+  amount: string,
+  dispatch: Dispatch
 ): Promise<boolean> => {
-  const dispatch = useAppDispatch();
   try {
     const NUMUSToken = await GetContract(
       process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMUSTOKEN!,

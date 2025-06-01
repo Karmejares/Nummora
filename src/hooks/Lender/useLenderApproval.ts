@@ -1,16 +1,14 @@
-// hooks/lender/useLenderApproval.ts
 import { useState } from "react";
 import { approveNumusToken } from "@/contracts/numusToken/approveNumusToken";
-import { useBalanceOf } from "@/hooks/Balance/useBalanceOf";
-import { useAppDispatch } from "@/store/hooks";
+import {balanceOfNumusToken} from "@/contracts/numusToken/balanceOfNumusToken";
+import {useAppDispatch} from "@/store/hooks";
 
 export const useLenderApproval = () => {
-  const dispatch = useAppDispatch();
-  const { balanceOf } = useBalanceOf();
-
+  const { balanceOf } = balanceOfNumusToken();
   const [checked, setChecked] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+  const dispatch = useAppDispatch();
 
   const handleApprove = async () => {
     setIsLoading(true);

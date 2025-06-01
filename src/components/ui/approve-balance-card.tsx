@@ -12,8 +12,11 @@ import {
 import { useLenderApproval } from "@/hooks/Lender/useLenderApproval";
 
 export const ApproveBalanceCard: React.FC = () => {
-  const { checked, setChecked, isLoading, isSuccess, handleApprove } =
-    useLenderApproval();
+  const {
+      checked,
+      setChecked,
+      isLoading, isSuccess,
+      handleApprove } = useLenderApproval();
 
   return (
     <Paper

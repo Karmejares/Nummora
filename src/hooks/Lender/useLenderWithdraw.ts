@@ -1,12 +1,10 @@
-// hooks/useLenderWithdraw.ts
 import { useState } from "react";
 import { ethers } from "ethers";
 import { useToast } from "@/hooks/use-toast";
 import { useAppDispatch, useAppSelector } from "@/store/hooks";
 import { setLoading, setWalletError } from "@/store/walletSlice";
-import { useBalanceOf } from "@/hooks/Balance/useBalanceOf";
-import { GetContract } from "@/utils/Contract";
-import NummoraLoanABI from "@/lib/abi/NummoraLoan.json";
+import {balanceOfNumusToken} from "@/contracts/numusToken/balanceOfNumusToken";
+import {withdrawLenderNummoraCore} from "@/contracts/NummoraCore/withdrawLenderNummoraCore";
 
 export function useLenderWithdraw() {
   const [amount, setAmount] = useState<string>("");
@@ -15,7 +13,7 @@ export function useLenderWithdraw() {
   const dispatch = useAppDispatch();
   const loading = useAppSelector((state) => state.wallet.loading);
   const { toast } = useToast();
-  const { balanceOf, balanceFormatted } = useBalanceOf();
+  const { balanceOf, balanceFormatted } = balanceOfNumusToken();
 
   const handleWithdraw = async () => {
     const numericAmount = Number(amount);
@@ -44,45 +42,9 @@ export function useLenderWithdraw() {
     }
 
     dispatch(setLoading(true));
-
-    try {
-      const contractCore = await GetContract(
-        process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMMORALOAN!,
-        NummoraLoanABI
-      );
-
-      if (!contractCore) {
-        toast({
-          title: "MetaMask no encontrado",
-          description: "Instala MetaMask para continuar.",
-          status: "error",
-        });
-        dispatch(setWalletError("MetaMask no encontrado"));
-        return;
-      }
-
-      const parsedAmount = ethers.parseUnits(amount.trim(), 18);
-      await contractCore.contract.retirarPrestamista(parsedAmount);
-
-      toast({
-        title: "¡Retiro confirmado!",
-        description: `${numericAmount} NUM han sido retirados.`,
-        status: "success",
-      });
-
-      setAmount("");
-      setOpenDialog(false);
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Error desconocido";
-      toast({
-        title: "Error en el retiro",
-        description: message,
-        status: "error",
-      });
-    } finally {
-      dispatch(setLoading(false));
-    }
+    await withdrawLenderNummoraCore(amount, dispatch);
+    setAmount("");
+    setOpenDialog(false);
   };
 
   return {
