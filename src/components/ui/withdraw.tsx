@@ -118,7 +118,7 @@ export default function Withdraw() {
       // Interact with the contract's withdrawal function (assuming it takes NUM as a parameter)
       const valueInNum = ethers.parseUnits(amount, 18); // Convert NUM amount to the correct units
 
-      const tx = await contract.retirarNUMUSDeudor(valueInNum);
+      const tx = await contract.retirarPrestamista(valueInNum);
 
       toast({
         title: "¡Retiro confirmado!",
