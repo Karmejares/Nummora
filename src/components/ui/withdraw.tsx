@@ -8,8 +8,6 @@ import {
   Divider,
   CircularProgress,
 } from "@mui/material";
-import { useToast } from "@/hooks/use-toast";
-import { ethers } from "ethers";
 import {
   Dialog,
   DialogTrigger,
@@ -18,86 +16,18 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
-import NummoraLoanABI from "@/lib/abi/NummoraLoan.json";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
-import { setLoading, setWalletError } from "@/store/walletSlice";
-import { balanceOfNumusToken } from "@/contracts/numusToken/balanceOfNumusToken";
-import {GetContract} from "@/utils/Contract";
+import { useLenderWithdraw } from "@/hooks/Lender/useLenderWithdraw";
 
 export default function Withdraw() {
-  const [amount, setAmount] = useState<string>("");
-  const [openDialog, setOpenDialog] = useState<boolean>(false);
-  const dispatch = useAppDispatch();
-  const loading = useAppSelector((state) => state.wallet.loading);
-  const { toast } = useToast();
-  const { balanceOf, balanceFormatted } = balanceOfNumusToken();
-
-  async function handleWithdraw() {
-    const numericAmount = Number(amount);
-
-    if (numericAmount > parseFloat(balanceFormatted)) {
-      toast({
-        title: "Fondos insuficientes",
-        description: `Tu saldo actual es ${balanceFormatted} NUM`,
-        status: "error",
-      });
-      return;
-    }
-
-    // Ensure the amount is not greater than the actual wallet balance (NUM)
-    if (numericAmount > parseFloat(ethers.formatUnits(balanceOf || 0, 18))) {
-      toast({
-        title: "Fondos insuficientes",
-        description: `Tu saldo actual es ${ethers.formatUnits(
-            balanceOf || 0,
-          18
-        )} NUM`,
-        status: "error",
-      });
-      return;
-    }
-
-    dispatch(setLoading(true));
-
-    try {
-
-      // Create contract instance
-      const contractCore = await GetContract(
-          process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMMORALOAN!,
-          NummoraLoanABI
-      );
-      if (contractCore == null) {
-        toast({
-          title: "MetaMask no encontrado",
-          description: "Instala MetaMask para continuar.",
-          status: "error",
-        });
-        dispatch(setWalletError("MetaMask no encontrado"));
-        return;
-      }
-
-      const parsedAmount = ethers.parseUnits(amount.trim(), 18);
-      await contractCore.contract.retirarPrestamista(parsedAmount);
-
-      toast({
-        title: "¡Retiro confirmado!",
-        description: `${numericAmount} NUM han sido retirados.`,
-        status: "success",
-      });
-      setAmount("");
-    } catch (error) {
-      const message =
-        error instanceof Error ? error.message : "Error desconocido";
-      toast({
-        title: "Error en el retiro",
-        description: message,
-        status: "error",
-      });
-    } finally {
-      dispatch(setLoading(false));
-      setOpenDialog(false);
-    }
-  }
+  const {
+    amount,
+    setAmount,
+    openDialog,
+    setOpenDialog,
+    handleWithdraw,
+    balanceFormatted,
+    loading,
+  } = useLenderWithdraw();
 
   return (
     <Paper
@@ -120,9 +50,7 @@ export default function Withdraw() {
       <Box mb={4}>
         <Typography variant="body1" sx={{ mb: 2 }}>
           Saldo disponible:{" "}
-          <strong>
-            {balanceFormatted ? balanceFormatted : "Cargando..."} NUM
-          </strong>
+          <strong>{balanceFormatted || "Cargando..."} NUM</strong>
         </Typography>
 
         <TextField
@@ -180,7 +108,12 @@ export default function Withdraw() {
             ¿Estás seguro de que deseas retirar <strong>{amount} NUM</strong>?
           </Typography>
           <DialogFooter className="flex justify-end gap-2 pt-4">
-            <Button variant="outlined" color="secondary" disabled={loading}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              disabled={loading}
+              onClick={() => setOpenDialog(false)}
+            >
               Cancelar
             </Button>
             <Button onClick={handleWithdraw} disabled={loading}>

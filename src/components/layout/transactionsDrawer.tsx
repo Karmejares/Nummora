@@ -88,7 +88,7 @@ export default function TransactionsDrawer({
               <Deposit />
               <Divider
                 className="my-4 border-[hsl(var(--muted))]"
-                sx={{ width: "100%" }}
+                sx={{ mb: 6 }}
               />
               <ApproveBalanceCard />
             </>
