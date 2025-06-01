@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+// components/ApproveBalanceCard.tsx
+import React from "react";
 import {
   Box,
   Paper,
@@ -8,29 +9,11 @@ import {
   FormControlLabel,
   CircularProgress,
 } from "@mui/material";
-import { approveNumusToken } from "@/contracts/numusToken/approveNumusToken";
-import { useBalanceOf } from "@/hooks/Balance/useBalanceOf";
-import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { useLenderApproval } from "@/hooks/Lender/useLenderApproval";
 
 export const ApproveBalanceCard: React.FC = () => {
-  const dispatch = useAppDispatch();
-  const { balanceOf } = useBalanceOf();
-  const [checked, setChecked] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isSuccess, setIsSuccess] = useState(false);
-
-  const handleApprove = async () => {
-    setIsLoading(true);
-    console.log(balanceOf);
-
-    const success = await approveNumusToken(
-      process.env.NEXT_PUBLIC_CONTRACT_ADDRESS_NUMMORALOAN!,
-      balanceOf.toString(),
-      dispatch
-    );
-    setIsSuccess(success);
-    setIsLoading(false);
-  };
+  const { checked, setChecked, isLoading, isSuccess, handleApprove } =
+    useLenderApproval();
 
   return (
     <Paper
