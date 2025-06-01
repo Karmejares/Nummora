@@ -46,7 +46,7 @@ export function LoanRequestModal({
         toast({
           title: "Error",
           description: "Ingrese un monto válido.",
-          variant: "destructive",
+          status: "error",
         });
         setIsLoading(false);
         return;
@@ -70,7 +70,7 @@ export function LoanRequestModal({
         toast({
           title: "Fallo en Solicitud",
           description: "No se pudo enviar la solicitud (simulada).",
-          variant: "destructive",
+          status: "error",
         });
       }
     } catch (error) {
@@ -78,7 +78,7 @@ export function LoanRequestModal({
       toast({
         title: "Error",
         description: "Ocurrió un error al enviar la solicitud.",
-        variant: "destructive",
+        status: "error",
       });
     } finally {
       setIsLoading(false);
@@ -148,7 +148,7 @@ export function LoanRequestModal({
           <DialogFooter>
             <Button
               type="button"
-              variant="outline"
+              status="outline"
               onClick={() => setIsOpen(false)}
               disabled={isLoading}
             >

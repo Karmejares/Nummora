@@ -41,7 +41,7 @@ export function LoanSimulationModal({ onLoanSimulated }: { onLoanSimulated: (new
       const numTermDays = parseInt(termDays, 10);
 
       if (isNaN(numAmount) || numAmount <= 0) {
-        toast({ title: "Error", description: "Por favor ingrese un monto válido.", variant: "destructive" });
+        toast({ title: "Error", description: "Por favor ingrese un monto válido.", status: "error" });
         setIsLoading(false);
         return;
       }
@@ -54,11 +54,11 @@ export function LoanSimulationModal({ onLoanSimulated }: { onLoanSimulated: (new
         // Reset form
         setAmount("");
       } else {
-        toast({ title: "Fallo en Simulación", description: "No se pudo iniciar el préstamo (simulado).", variant: "destructive" });
+        toast({ title: "Fallo en Simulación", description: "No se pudo iniciar el préstamo (simulado).", status: "error" });
       }
     } catch (error) {
       console.error("Simulation error:", error);
-      toast({ title: "Error", description: "Ocurrió un error durante la simulación.", variant: "destructive" });
+      toast({ title: "Error", description: "Ocurrió un error durante la simulación.", status: "error" });
     } finally {
       setIsLoading(false);
     }

@@ -1,10 +1,10 @@
 
-import type { Loan } from '@/types';
+import type { LenderLoan } from '@/types';
 import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils';
 
 interface LoanStatusBadgeProps {
-  status: Loan['status'];
+  status: LenderLoan['status'];
 }
 
 export function LoanStatusBadge({ status }: LoanStatusBadgeProps) {

@@ -1,5 +1,5 @@
 
-import type { Loan } from '@/types';
+import type { LenderLoan } from '@/types';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { es } from 'date-fns/locale';
 
 interface LoanCardProps {
-  loan: Loan;
+  loan: LenderLoan;
 }
 
 function formatCurrency(amount: number, currencyCode: string) {

@@ -60,7 +60,7 @@ export const useLenderDeposit = () => {
       toast({
         title: "¡Depósito confirmado!",
         description: tx.hash,
-        status: "info",
+        status: "success",
       });
 
       setAmount("");

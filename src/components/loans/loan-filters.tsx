@@ -1,16 +1,16 @@
 
 "use client";
 
-import type { LoanFilterStatus } from '@/types';
+import type { LenderLoanStatus } from '@/types';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 interface LoanFiltersProps {
-  currentFilter: LoanFilterStatus;
-  onFilterChange: (filter: LoanFilterStatus) => void;
+  currentFilter: LenderLoanStatus;
+  onFilterChange: (filter: LenderLoanStatus) => void;
 }
 
-const filters: { label: string; value: LoanFilterStatus }[] = [
+const filters: { label: string; value: LenderLoanStatus }[] = [
   { label: 'Activos', value: 'active' },
   { label: 'Pendientes', value: 'pending' },
   { label: 'Terminados', value: 'completed' },

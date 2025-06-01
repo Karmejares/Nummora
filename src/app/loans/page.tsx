@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useEffect } from "react";
-import type { Loan, LoanFilterStatus } from "@/types";
+import type { LenderLoan, LenderLoanStatus } from "@/types";
 import { mockLoans as initialMockLoans } from "@/data/mock-loans";
 import { LoanCard } from "@/components/loans/loan-card";
 import { LoanFilters } from "@/components/loans/loan-filters";
@@ -17,9 +17,9 @@ export default function LoansPage() {
 
   const { balanceFormatted } = balanceOfNumusToken();
 
-  const [loans, setLoans] = useState<Loan[]>([]);
+  const [loans, setLoans] = useState<LenderLoan[]>([]);
   const [currentFilter, setCurrentFilter] =
-    useState<LoanFilterStatus>("active");
+    useState<LenderLoanStatus>("active");
   const [isLoading, setIsLoading] = useState(true); // Simulate initial loading
 
   useEffect(() => {
@@ -30,14 +30,14 @@ export default function LoansPage() {
     }, 500); // Short delay to show skeleton loaders
   }, []);
 
-  const handleFilterChange = (filter: LoanFilterStatus) => {
+  const handleFilterChange = (filter: LenderLoanStatus) => {
     setCurrentFilter(filter);
   };
 
   const handleLoanSimulated = (newLoanId: string) => {
     // In a real app, you'd refetch loans or add the new loan to the list.
     // For simulation, we'll add a dummy loan to the list.
-    const newSimulatedLoan: Loan = {
+    const newSimulatedLoan: LenderLoan = {
       id: newLoanId,
       borrowerName: "Nuevo Simulado",
       borrowerAvatar: "https://placehold.co/40x40.png",
