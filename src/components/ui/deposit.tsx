@@ -21,19 +21,20 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
-import NummoraLoanABI from "@/lib/abi/NummoraLoan.json"; // Asegúrate de que la ruta sea correcta
+import NummoraLoanABI from "@/lib/abi/NummoraLoan.json";
 
-const CONTRACT_ADDRESS = "0x10a678831b9A29282954530799dCcAB7710abd3F"; // Reemplaza con tu dirección de contrato
+import { useAppDispatch, useAppSelector } from "@/store/hooks";
+import { setLoading, setWalletError, setBalance } from "@/store/walletSlice";
+
+const CONTRACT_ADDRESS = "0x10a678831b9A29282954530799dCcAB7710abd3F";
 
 export default function Deposit() {
-  const [amount, setAmount] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [confirmOpen, setConfirmOpen] = useState(false);
-  const Toast = useToast(); // Reemplaza con la dirección del usuario
+  const [amount, setAmount] = useState<string | undefined>();
+  const dispatch = useAppDispatch();
+  const loading = useAppSelector((state) => state.wallet.loading);
+  const Toast = useToast();
 
   const isAmountValid = amount && !isNaN(Number(amount)) && Number(amount) > 0;
-
-  async function getBalance({}) {}
 
   async function handleDeposit() {
     if (!isAmountValid) {
@@ -41,7 +42,7 @@ export default function Deposit() {
       return;
     }
 
-    setLoading(true);
+    dispatch(setLoading(true));
 
     try {
       const ethereum = getSafeEthereumProvider();
@@ -52,40 +53,39 @@ export default function Deposit() {
           description: "Instala MetaMask para continuar.",
           status: "error",
         });
+        dispatch(setWalletError("MetaMask no encontrado"));
         return;
       }
 
       const provider = new ethers.BrowserProvider(ethereum);
-      console.log("Provider:", provider);
-
       const signer = await provider.getSigner();
-      console.log("Signer:", signer);
-
       const contract = new ethers.Contract(
         CONTRACT_ADDRESS,
         NummoraLoanABI,
         signer
       );
-      console.log("Contract:", contract);
-      const valueInEth = ethers.parseEther(amount);
-      // ✅ Llamada al contrato con el ABI
+
       const tx = await contract.depositarPrestamista({
         value: ethers.parseEther(amount),
       });
 
-      console.log("Transaction:", tx);
+      // ✅ Actualizar el balance directamente
+      dispatch(setBalance(Number(amount).toString()));
 
       Toast.toast({ title: "¡Depósito confirmado!", status: "success" });
       setAmount("");
     } catch (error) {
-      console.error(error);
+      const msg = error instanceof Error ? error.message : "Error desconocido";
 
       Toast.toast({
         title: "Fallo en la transacción",
-        description:
-          error instanceof Error ? error.message : "Error desconocido",
+        description: msg,
         status: "error",
       });
+
+      dispatch(setWalletError(msg));
+    } finally {
+      dispatch(setLoading(false));
     }
   }
 
@@ -102,15 +102,11 @@ export default function Deposit() {
         variant="h4"
         component="h2"
         gutterBottom
-        sx={{
-          fontWeight: 700,
-          color: "text.primary",
-        }}
+        sx={{ fontWeight: 700 }}
       >
         Depositar Fondos
       </Typography>
 
-      {/* Input de monto */}
       <Box mb={4}>
         <TextField
           label="Monto (NUM)"
@@ -135,7 +131,6 @@ export default function Deposit() {
 
       <Divider sx={{ my: 3 }} />
 
-      {/* Dialog de confirmación */}
       <Dialog>
         <DialogTrigger asChild>
           <Button
@@ -143,7 +138,7 @@ export default function Deposit() {
             fullWidth
             size="large"
             disabled={loading || !isAmountValid}
-            className="rounded-xl shadow-md transition-all duration-300 font-semibold"
+            className="rounded-xl shadow-md font-semibold"
             sx={{
               backgroundColor: "#1e293b",
               color: "#fff",

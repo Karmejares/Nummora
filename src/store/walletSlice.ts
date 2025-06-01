@@ -6,6 +6,8 @@ interface WalletState {
   balance: string | null;
   connected: boolean;
   error: string | null;
+  loading: boolean; // ✅ nuevo
+  txHash: string | null; // ✅ nuevo
 }
 
 const initialState: WalletState = {
@@ -14,15 +16,14 @@ const initialState: WalletState = {
   balance: null,
   connected: false,
   error: null,
+  loading: false, // ✅ inicializado
+  txHash: null, // ✅ inicializado
 };
 
 const walletSlice = createSlice({
   name: "wallet",
   initialState,
   reducers: {
-    setBalance(state, action: PayloadAction<string | null>) {
-      state.balance = action.payload;
-    },
     connectWallet(state, action: PayloadAction<string>) {
       state.address = action.payload;
       state.connected = true;
@@ -31,20 +32,29 @@ const walletSlice = createSlice({
     disconnectWallet(state) {
       state.address = null;
       state.connected = false;
+      state.balance = null;
       state.simulatedBalance = 0;
       state.error = null;
+      state.loading = false;
+      state.txHash = null;
+    },
+    setBalance(state, action: PayloadAction<string>) {
+      state.balance = action.payload;
     },
     setSimulatedBalance(state, action: PayloadAction<number>) {
       state.simulatedBalance = action.payload;
     },
-    setWalletError(state, action: PayloadAction<string | null>) {
+    simulateWithdraw(state, action: PayloadAction<number>) {
+      state.simulatedBalance -= action.payload;
+    },
+    setWalletError(state, action: PayloadAction<string>) {
       state.error = action.payload;
     },
-    simulateWithdraw(state, action: PayloadAction<number>) {
-      state.simulatedBalance = Math.max(
-        state.simulatedBalance - action.payload,
-        0
-      );
+    setLoading(state, action: PayloadAction<boolean>) {
+      state.loading = action.payload;
+    },
+    setTransactionHash(state, action: PayloadAction<string | null>) {
+      state.txHash = action.payload;
     },
   },
 });
@@ -52,10 +62,12 @@ const walletSlice = createSlice({
 export const {
   connectWallet,
   disconnectWallet,
-  setSimulatedBalance,
-  setWalletError,
   setBalance,
-  simulateWithdraw, // <-- Nuevo export
+  setSimulatedBalance,
+  simulateWithdraw,
+  setWalletError,
+  setLoading,
+  setTransactionHash,
 } = walletSlice.actions;
 
 export default walletSlice.reducer;
