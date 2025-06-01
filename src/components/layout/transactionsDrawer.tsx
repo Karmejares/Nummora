@@ -1,5 +1,3 @@
-"use client";
-
 import React from "react";
 import {
   Drawer,
@@ -15,6 +13,7 @@ import Deposit from "../ui/deposit";
 import Withdraw from "../ui/withdraw";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import CurrencyExchangeIcon from "@mui/icons-material/CurrencyExchange";
+import { ApproveBalanceCard } from "../ui/approve-balance-card";
 
 interface TransactionsDrawerProps {
   open: boolean;
@@ -84,7 +83,16 @@ export default function TransactionsDrawer({
 
         {/* Content */}
         <Box className="flex-grow overflow-y-auto p-4 bg-[hsl(var(--background))]">
-          {tabIndex === 0 && <Deposit />}
+          {tabIndex === 0 && (
+            <>
+              <Deposit />
+              <Divider
+                className="my-4 border-[hsl(var(--muted))]"
+                sx={{ width: "100%" }}
+              />
+              <ApproveBalanceCard />
+            </>
+          )}
           {tabIndex === 1 && <Withdraw />}
         </Box>
       </Box>
