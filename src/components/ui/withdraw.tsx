@@ -1,6 +1,3 @@
-// components/Deposit.tsx
-"use client";
-
 import React from "react";
 import {
   Button,
@@ -19,18 +16,18 @@ import {
   DialogHeader,
   DialogFooter,
 } from "@/components/ui/dialog";
-import { useLenderDeposit } from "@/hooks/Lender/useLenderDeposit";
+import { useLenderWithdraw } from "@/hooks/Lender/useLenderWithdraw";
 
-export default function Deposit() {
+export default function Withdraw() {
   const {
     amount,
     setAmount,
     openDialog,
     setOpenDialog,
-    isAmountValid,
-    handleDeposit,
+    handleWithdraw,
+    balanceFormatted,
     loading,
-  } = useLenderDeposit();
+  } = useLenderWithdraw();
 
   return (
     <Paper
@@ -47,23 +44,22 @@ export default function Deposit() {
         gutterBottom
         sx={{ fontWeight: 700 }}
       >
-        Depositar Fondos
+        Retirar Fondos
       </Typography>
 
       <Box mb={4}>
+        <Typography variant="body1" sx={{ mb: 2 }}>
+          Saldo disponible:{" "}
+          <strong>{balanceFormatted || "Cargando..."} NUM</strong>
+        </Typography>
+
         <TextField
-          label="Monto (NUM)"
+          label="Cantidad a retirar (NUM)"
           type="number"
           value={amount}
           onChange={(e) => setAmount(e.target.value)}
           fullWidth
           disabled={loading}
-          error={amount !== "" && !isAmountValid}
-          helperText={
-            amount !== "" && !isAmountValid
-              ? "Ingresa un monto válido (> 0)"
-              : " "
-          }
           variant="outlined"
           inputProps={{
             step: "1000",
@@ -80,7 +76,6 @@ export default function Deposit() {
             variant="contained"
             fullWidth
             size="large"
-            disabled={loading || !isAmountValid}
             className="rounded-xl shadow-md font-semibold"
             sx={{
               backgroundColor: "#1e293b",
@@ -100,23 +95,28 @@ export default function Deposit() {
                 <CircularProgress size={20} sx={{ mr: 1 }} /> Procesando...
               </>
             ) : (
-              "Depositar"
+              "Retirar"
             )}
           </Button>
         </DialogTrigger>
 
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Confirmar Depósito</DialogTitle>
+            <DialogTitle>Confirmar Retiro</DialogTitle>
           </DialogHeader>
           <Typography>
-            ¿Estás seguro de que deseas depositar <strong>{amount} NUM</strong>?
+            ¿Estás seguro de que deseas retirar <strong>{amount} NUM</strong>?
           </Typography>
           <DialogFooter className="flex justify-end gap-2 pt-4">
-            <Button variant="outlined" color="secondary" disabled={loading}>
+            <Button
+              variant="outlined"
+              color="secondary"
+              disabled={loading}
+              onClick={() => setOpenDialog(false)}
+            >
               Cancelar
             </Button>
-            <Button onClick={handleDeposit} disabled={loading}>
+            <Button onClick={handleWithdraw} disabled={loading}>
               {loading ? (
                 <>
                   <CircularProgress size={16} sx={{ mr: 1 }} /> Confirmando...

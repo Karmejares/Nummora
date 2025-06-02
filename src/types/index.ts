@@ -1,22 +1,32 @@
+// src/types/index.ts
 
-export interface Loan {
+export type LenderLoanStatus = "active" | "pending" | "completed";
+export type BorrowerLoanStatus = "requested" | "funded" | "active" | "repaid";
+
+interface BaseLoan {
   id: string;
-  borrowerName: string;
-  borrowerAvatar?: string; // URL to avatar image
   amount: number;
   currency: string;
-  interestRate: number; // Annual percentage rate, e.g., 5 for 5%
-  status: 'active' | 'pending' | 'completed';
+  interestRate: number;
   isVerified?: boolean;
-
-  // Status-specific fields
-  dueDate?: string; // ISO date string, for pending loans
-  termEndDate?: string; // ISO date string, for active loans
-  paidDate?: string; // ISO date string, for completed loans
-  
-  // Optional blockchain related fields (simulated)
-  collateral?: string; // e.g., "ETH", "BTC"
-  contractAddress?: string; // Simulated contract address
+  contractAddress?: string;
 }
 
-export type LoanFilterStatus = 'active' | 'pending' | 'completed';
+export interface LenderLoan extends BaseLoan {
+  borrowerName: string;
+  borrowerAvatar?: string;
+  status: LenderLoanStatus;
+  dueDate?: string;
+  termEndDate?: string;
+  paidDate?: string;
+  collateral?: string;
+}
+
+export interface BorrowerLoan extends BaseLoan {
+  status: BorrowerLoanStatus;
+  beneficiaryId: string;
+  investorId?: string;
+  requestedAt?: string;
+  fundedAt?: string;
+  repaidAt?: string;
+}

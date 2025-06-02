@@ -1,7 +1,7 @@
 
-import type { Loan } from '@/types';
+import type { LenderLoan } from '@/types';
 
-export const mockLoans: Loan[] = [
+export const mockLoans: LenderLoan[] = [
   {
     id: 'loan-1',
     borrowerName: 'Alice Wonderland',

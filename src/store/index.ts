@@ -4,6 +4,7 @@ import userReducer from "./userSlice";
 import loansReducer from "./loansSlice";
 import transactionsReducer from "./transactionsSlice";
 import uiReducer from "./uiSlice";
+import borrowersReducer from "./borrowersSlice";
 
 export const store = configureStore({
   reducer: {
@@ -12,6 +13,7 @@ export const store = configureStore({
     loans: loansReducer,
     transactions: transactionsReducer,
     ui: uiReducer,
+    borrowers: borrowersReducer,
   },
 });
 

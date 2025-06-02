@@ -6,6 +6,7 @@
   :root {
     --background: 175 50% 91%; /* Light Teal #E0F2F1 */
     --foreground: 250 5% 11%; /* Dark Text #1C1B1F */
+    --drawer: 175 45% 85%; /* Light Teal #E0F2F1 */
 
     --card: 0 0% 96%; /* Card Background Light Gray #F5F5F5 */
     --card-foreground: 250 5% 11%;
@@ -49,6 +50,7 @@
   }
 
   .dark {
+    --drawer: 175 30% 20%; /* Una versión más oscura en dark mode */
     --background: 240 10% 3.9%;
     --foreground: 0 0% 98%;
 
