@@ -39,25 +39,31 @@ export const LoanRequestBorrowerModal = ({
     const handleSubmit = async () => {
         try {
             if (!isValid) {
-                console.log("Invalido")
+                console.log("Invalido");
                 return;
             }
+
+            const loanSuccess = await loanRequestNummoraCore(
+                ethers.parseUnits(amount, 18).toString(),
+                dispatch
+            );
+
+            if (!loanSuccess) {
+                return;
+            }
+
+            // Ahora que el préstamo fue exitoso, notifica al padre
             onConfirm(amount.trim(), installments);
+
             setOpen(false);
             setAmount("");
             setInstallments(1);
-
-            const loanRequest = await loanRequestNummoraCore(
-                ethers.parseUnits(amount, 18).toString(),
-                dispatch
-            )
-            console.log(loanRequest);
-            return;
         } catch (e) {
             console.log(e);
             return;
         }
     };
+
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>

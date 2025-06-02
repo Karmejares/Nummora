@@ -13,6 +13,8 @@ import {LoanRequestBorrowerModal} from "@/components/borrower/loan-request-borro
 import {Grid} from "@mui/system";
 import {PayLoanNummoraCore} from "@/contracts/NummoraCore/PayLoanNummoraCore";
 import {useAppDispatch} from "@/store/hooks";
+import {toast} from "@/hooks/use-toast";
+
 
 
 // ⚠️ Simulamos un usuario logueado:
@@ -58,10 +60,38 @@ export default function BorrowersPage() {
     }
   };
 
-  const handleRequestLoan = async (amount: string, installments: number) => {
-    console.log("Solicitar préstamo de:", amount, "cuotas:", installments);
-    // Aquí va la lógica para procesar la solicitud
+  const handleRequestLoan = async (_amount: string, _installments: number) => {
+    const raw = sessionStorage.getItem("nummora_loans");
+    const parsed = raw ? JSON.parse(raw) : [];
+    setSessionLoans(parsed);
   };
+
+  const handlePayLoan = async (loan: any) => {
+    console.log("Loan a pagar:", loan); // 👀 Revisa qué tiene
+
+    if (!loan.loanId || !loan.toPay) {
+      toast({
+        title: "Error",
+        description: "Información del préstamo incompleta.",
+        status: "error",
+      });
+      return;
+    }
+
+    const success = await PayLoanNummoraCore(
+        loan.loanId,
+        loan.toPay,
+        dispatch
+    );
+
+    if (success) {
+      const raw = sessionStorage.getItem("nummora_loans");
+      const parsed = raw ? JSON.parse(raw) : [];
+      setSessionLoans(parsed);
+    }
+  };
+
+
 
   return (
     <div className="container mx-auto p-4 md:p-6 lg:p-8">
@@ -81,7 +111,7 @@ export default function BorrowersPage() {
               </Button>
             ))}
           </div>
-          <LoanRequestBorrowerModal onConfirm={handleRequestLoan} />
+          <LoanRequestBorrowerModal onConfirm={ handleRequestLoan} />
         </div>
       </div>
 
@@ -138,14 +168,10 @@ export default function BorrowersPage() {
 
                     <div className="space-y-1">
                       <p className="text-muted-foreground text-sm">Prestamista</p>
-                      <p className="text-base font-medium">{loan.lender}</p>
+                      <p className="text-sm break-all">{loan.lender}</p>
                     </div>
 
-                    <Button onClick={ async () => await PayLoanNummoraCore(
-                        loan.loanId,
-                        loan.toPay,
-                        dispatch
-                    )} className="w-full mt-4">Pagar</Button>
+                    <Button onClick={ () => handlePayLoan(loan) } className="w-full mt-4">Pagar</Button>
                   </CardContent>
                 </Card>
             ))}
